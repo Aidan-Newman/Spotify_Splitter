@@ -17,8 +17,6 @@ REDIRECT_URI = os.getenv("REDIRECT_URI")
 SCOPE = "playlist-modify-public playlist-modify-private"
 STATE = "".join(random.choices(string.ascii_letters, k=16))
 
-code = None
-
 # --------- APP STUFF ---------
 app = Flask(__name__)
 app.debug = True

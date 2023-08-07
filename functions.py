@@ -1,8 +1,9 @@
 import base64
 import json
 import time
+import datetime
 from requests import post
-from flask import Flask, request, url_for, session, redirect
+from flask import url_for, session, redirect
 
 import os
 from dotenv import load_dotenv
@@ -27,9 +28,18 @@ def create_playlist():
         "Authorization": "Bearer " + session.get("token_info").get("access_token"),
         "Content-Type": "application/json"
     }
-    data = '{"name": "Spotify Splitter Playlist", "description": "Playlist Created by Playlist Splitter!", "public": false, "collaborative": false}'
+    # data = '{"name": "Spotify Splitter Playlist", ' \
+    #        '"description":"Playlist Created by Playlist Splitter!", ' \
+    #        '"public": false, ' \
+    #        '"collaborative": false}'
+    data = {
+        "name": "Spotify Splitter Playlist",
+        "description": "Created at: " + str(datetime.datetime.now()),
+        "public": False,
+        "collaborative": False
+    }
 
-    result = post(url=url, headers=headers, data=data)
+    result = post(url=url, headers=headers, data=json.dumps(data))
     json_result = json.loads(result.content)
     return json_result
 # ------- APP STUFF OVER -------
