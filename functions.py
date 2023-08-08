@@ -67,7 +67,7 @@ def get_token(code):
     return token_info
 
 
-def refresh_token(refresh_token):
+def get_refresh_token(refresh_token):
     auth_string = CLIENT_ID + ":" + CLIENT_SECRET
     auth_bytes = auth_string.encode("utf-8")
     auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")
@@ -99,7 +99,6 @@ def check_token():
 
     # if there's no token return ({}, False)
     if not session.get("token_info", False):
-        token_valid = False
         return token_info, token_valid
     
     # check if token has expired
@@ -107,8 +106,8 @@ def check_token():
     token_expired = session.get("token_info").get("expires_at") - current_time < 60
 
     # refresh token if it's expired
-    if (token_expired):
-        token_info = refresh_token(session.get("token_info").get("refresh_token"))
+    if token_expired:
+        token_info = get_refresh_token(session.get("token_info").get("refresh_token"))
 
     token_valid = True
     return token_info, token_valid
