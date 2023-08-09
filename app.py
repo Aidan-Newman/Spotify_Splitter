@@ -3,18 +3,13 @@
 import random
 import string
 
-import os
-from dotenv import load_dotenv
-
-from flask import Flask, request, url_for, session, redirect
-from functions import create_playlist, get_token
-
+from flask import Flask, request
+from functions import *
 
 load_dotenv()
 CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SCOPE = "playlist-modify-public playlist-modify-private"
+SCOPE = os.getenv("SCOPE")
 STATE = "".join(random.choices(string.ascii_letters, k=16))
 
 # --------- APP STUFF ---------
@@ -45,4 +40,4 @@ def redirected():
     token_info = get_token(code)
     session["token_info"] = token_info
     create_playlist()
-    return "Playlist created!"
+    return "Playlist Created!"

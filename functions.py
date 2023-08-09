@@ -2,7 +2,7 @@ import base64
 import json
 import time
 import datetime
-from requests import post
+from requests import post, get
 from flask import url_for, session, redirect
 
 import os
@@ -12,26 +12,31 @@ load_dotenv()
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SCOPE = "playlist-modify-public playlist-modify-private"
+
+
+def get_user_id():
+
+    token = get_updated_token()
+
+    url = "https://api.spotify.com/v1/me"
+    headers = {
+        "Authorization": "Bearer " + token,
+    }
+    result = get(url=url, headers=headers)
+    json_result = json.loads(result.content)
+    return json_result["id"]
 
 
 def create_playlist():
 
-    session["token_info"], authorized = check_token()
+    token = get_updated_token()
 
-    if not authorized:
-        redirect('/')
-
-    user_id = "ob+72"
+    user_id = get_user_id()
     url = f"https://api.spotify.com/v1/users/{user_id}/playlists"
     headers = {
-        "Authorization": "Bearer " + session.get("token_info").get("access_token"),
+        "Authorization": "Bearer " + token,
         "Content-Type": "application/json"
     }
-    # data = '{"name": "Spotify Splitter Playlist", ' \
-    #        '"description":"Playlist Created by Playlist Splitter!", ' \
-    #        '"public": false, ' \
-    #        '"collaborative": false}'
     data = {
         "name": "Spotify Splitter Playlist",
         "description": "Created at: " + str(datetime.datetime.now()),
@@ -42,9 +47,26 @@ def create_playlist():
     result = post(url=url, headers=headers, data=json.dumps(data))
     json_result = json.loads(result.content)
     return json_result
-# ------- APP STUFF OVER -------
 
 
+def get_user_playlists():
+
+    token = get_updated_token()
+
+    url = "https://api.spotify.com/v1/me/playlists"
+    headers = {
+        "Authorization": "Bearer " + token,
+    }
+    result = get(url=url, headers=headers)
+    json_result = json.loads(result.content)
+
+    return json_result["items"]
+
+
+# gap
+# gap
+# gap
+# --------- Token Management ---------
 def get_token(code):
     auth_string = CLIENT_ID + ":" + CLIENT_SECRET
     auth_bytes = auth_string.encode("utf-8")
@@ -93,14 +115,14 @@ def get_refresh_token(refresh_token):
     return token_info
 
 
-def check_token():
-    token_valid = False
+def get_updated_token():
     token_info = session.get("token_info", {})
 
     # if there's no token return ({}, False)
     if not session.get("token_info", False):
-        return token_info, token_valid
-    
+        redirect('/')
+        return None
+
     # check if token has expired
     current_time = int(time.time())
     token_expired = session.get("token_info").get("expires_at") - current_time < 60
@@ -109,5 +131,8 @@ def check_token():
     if token_expired:
         token_info = get_refresh_token(session.get("token_info").get("refresh_token"))
 
-    token_valid = True
-    return token_info, token_valid
+    session["token_info"] = token_info
+    return token_info
+
+
+# --------- Misc ---------
