@@ -19,9 +19,8 @@ def get_user_id():
 
     :return: user_id
     """
-
     update_token()
-    token = session.get("token_info").get("access_token")
+    token = retrieve_token()
 
     url = "https://api.spotify.com/v1/me"
     headers = {
@@ -38,9 +37,8 @@ def create_playlist(name, description, public, collaborative):
 
     :return: List of playlist items.
     """
-
     update_token()
-    token = session.get("token_info").get("access_token")
+    token = retrieve_token()
 
     user_id = get_user_id()
     url = f"https://api.spotify.com/v1/users/{user_id}/playlists"
@@ -66,9 +64,8 @@ def get_user_playlists():
 
     :return: List of playlist items.
     """
-
     update_token()
-    token = session.get("token_info").get("access_token")
+    token = retrieve_token()
 
     url = "https://api.spotify.com/v1/me/playlists"
     headers = {
@@ -90,7 +87,6 @@ def get_token(code):
 
     :return: List of playlist items.
     """
-
     auth_string = CLIENT_ID + ":" + CLIENT_SECRET
     auth_bytes = auth_string.encode("utf-8")
     auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")
@@ -118,7 +114,6 @@ def get_refreshed_token(refresh_token):
 
     :return: token_info
     """
-
     auth_string = CLIENT_ID + ":" + CLIENT_SECRET
     auth_bytes = auth_string.encode("utf-8")
     auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")
@@ -145,7 +140,6 @@ def update_token():
     Checks if a token has been acquired; if not it redirects to authorize. Then checks if the token is expired. If it
     is, it requests a refreshed token and updates the session's token_info.
     """
-
     token_info = session.get("token_info", {})
 
     # if there's no token return ({}, False)
@@ -164,4 +158,10 @@ def update_token():
     session["token_info"] = token_info
 
 
+def retrieve_token():
+    """
+    Retrieves the current session's access token.
+    :return: access_token
+    """
+    return session.get("token_info").get("access_token")
 # --------- Misc ---------
