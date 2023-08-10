@@ -2,6 +2,7 @@
 # imports
 import random
 import string
+import datetime
 
 from flask import Flask, request
 from functions import *
@@ -22,14 +23,12 @@ app.config["SESSION_COOKIE_NAME"] = "Playlist Splitter"
 
 @app.route('/')
 def authenticate():
-
     url = 'https://accounts.spotify.com/authorize'
     url += '?response_type=code'
     url += '&client_id=' + CLIENT_ID
     url += '&scope=' + SCOPE
     url += '&redirect_uri=' + url_for(REDIRECT_URI, _external=True)
     url += '&state=' + STATE
-    
     return redirect(url)
 
 
@@ -39,5 +38,5 @@ def redirected():
     code = request.args.get("code")
     token_info = get_token(code)
     session["token_info"] = token_info
-    create_playlist()
+    create_playlist("Spotify Splitter Playlist", "Created at: " + str(datetime.datetime.now()), False, False)
     return "Playlist Created!"
