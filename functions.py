@@ -16,7 +16,6 @@ REDIRECT_URI = os.getenv("REDIRECT_URI")
 def get_user_id():
     """
     Gets the current session's authorized user's id.
-
     :return: user_id
     """
     update_token()
@@ -34,7 +33,6 @@ def get_user_id():
 def create_playlist(name, description, public, collaborative):
     """
     Creates a playlist for the specified user (by user id).
-
     :return: List of playlist items.
     """
     update_token()
@@ -61,7 +59,6 @@ def create_playlist(name, description, public, collaborative):
 def get_user_playlists():
     """
     Gets the current authorized user's playlists.
-
     :return: List of playlist items.
     """
     update_token()
@@ -84,16 +81,11 @@ def get_user_playlists():
 def get_token(code):
     """
     Requests a token from Spotify after OAuth has been completed.
-
     :return: List of playlist items.
     """
-    auth_string = CLIENT_ID + ":" + CLIENT_SECRET
-    auth_bytes = auth_string.encode("utf-8")
-    auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")
-
     url = "https://accounts.spotify.com/api/token"
     headers = {
-        "Authorization": "Basic " + auth_base64,
+        "Authorization": "Basic " + get_encoded_header(),
         "Content-Type": "application/x-www-form-urlencoded"
     }
     data = {
@@ -111,16 +103,11 @@ def get_token(code):
 def get_refreshed_token(refresh_token):
     """
     Requests a refreshed token from Spotify using a provided refresh token.
-
     :return: token_info
     """
-    auth_string = CLIENT_ID + ":" + CLIENT_SECRET
-    auth_bytes = auth_string.encode("utf-8")
-    auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")
-
     url = "https://accounts.spotify.com/api/token"
     headers = {
-        "Authorization": "Basic " + auth_base64
+        "Authorization": "Basic " + get_encoded_header()
     }
     data = {
         "refresh_token": refresh_token,
@@ -156,6 +143,17 @@ def update_token():
         token_info = get_refreshed_token(session.get("token_info").get("refresh_token"))
 
     session["token_info"] = token_info
+
+
+def get_encoded_header():
+    """
+    Creates the encoded header with the client_id and the client_secret.
+    :return: encoded_header
+    """
+    auth_string = CLIENT_ID + ":" + CLIENT_SECRET
+    auth_bytes = auth_string.encode("utf-8")
+    auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")
+    return auth_base64
 
 
 def retrieve_token():
