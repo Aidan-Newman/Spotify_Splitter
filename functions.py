@@ -48,8 +48,9 @@ def create_playlist(name, description, public, collaborative):
         "public": public,
         "collaborative": collaborative
     }
-    result = make_request("post", url, headers, json.dumps(data))
-    return result
+    data = json.dumps(data)
+    result = make_request("post", url, headers, data)
+    return json.loads(result)
 
 
 def get_user_playlists():
@@ -87,12 +88,14 @@ def make_request(method=None, url=None, headers=None, data=None):
             case _:
                 raise Exception("Invalid Method")
 
+        print(result.status_code)
         if result.status_code == BAD_TOKEN_CODE:
             update_token()
             attempts += 1
         elif result.status_code not in GOOD_RESPONSE_CODES:
-            raise Exception("Request error: " + str(result.status_code))
+            raise Exception("Request error " + str(result.status_code))
         else:
+            print("good code")
             return json.loads(result.content)
     raise Exception("Refresh Attempts Surpassed")
 

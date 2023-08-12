@@ -5,6 +5,7 @@ import string
 # import datetime
 
 from flask import Flask, request, redirect
+
 from functions import *
 
 load_dotenv()
@@ -48,7 +49,13 @@ def redirected():
         if token_error:
             return redirect('/')
         session["token_info"] = token_info
-        return get_user_id()
+        return "Authenticated!"
+
+
+@app.route('/new_playlist')
+def new_playlist():
+    create_playlist("test", "testing", False, False)
+    return "Playlist created!"
 
 
 @app.route('/logout')
