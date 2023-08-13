@@ -3,18 +3,21 @@
 import random
 import string
 
-import os
-from dotenv import load_dotenv
+import atexit
+import signal
+import flask
+# import datetime
 
-from flask import Flask, request, url_for, session, redirect
-from functions import create_playlist, get_token
+from flask import Flask, request, redirect, render_template
+
+import functions
+from functions import *
 
 
 load_dotenv()
 CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SCOPE = "playlist-modify-public playlist-modify-private"
+SCOPE = os.getenv("SCOPE")
 STATE = "".join(random.choices(string.ascii_letters, k=16))
 
 # --------- APP STUFF ---------
@@ -26,23 +29,66 @@ app.config["SESSION_COOKIE_NAME"] = "Playlist Splitter"
 
 
 @app.route('/')
-def authenticate():
-
-    url = 'https://accounts.spotify.com/authorize'
-    url += '?response_type=code'
-    url += '&client_id=' + CLIENT_ID
-    url += '&scope=' + SCOPE
-    url += '&redirect_uri=' + url_for(REDIRECT_URI, _external=True)
-    url += '&state=' + STATE
-    
-    return redirect(url)
+def authorize():
+    # if a token is already stored redirect to redirect uri
+    if session.get("token_info", False):
+        return redirect("/" + REDIRECT_URI)
+    else:
+        url = 'https://accounts.spotify.com/authorize'
+        url += '?response_type=code'
+        url += '&client_id=' + CLIENT_ID
+        url += '&scope=' + SCOPE
+        url += '&redirect_uri=' + url_for(REDIRECT_URI, _external=True)
+        url += '&state=' + STATE
+        url += '&show_dialog=true'
+        return redirect(url)
 
 
 @app.route('/' + REDIRECT_URI)
-def redirected():
-    session.clear()
-    code = request.args.get("code")
-    token_info = get_token(code)
-    session["token_info"] = token_info
-    create_playlist()
-    return "Playlist created!"
+def handle_authorization():
+    # if a token is already stored display error
+    if session.get("token_info", False):
+        return "Authentication already completed..."
+    else:
+        session.clear()
+        code = request.args.get("code")
+        token_info, token_error = get_token(code)[0:2]
+        if token_error:
+            return redirect('/')
+        session["token_info"] = token_info
+        return redirect('/get_user_playlists')
+
+
+@app.route('/get_user_playlists')
+def get_user_playlists():
+    # if there's no token stored redirect to authorize
+    if not session.get("token_info", False):
+        return redirect('/')
+    else:
+        html_file = open("templates/testing.html", "w")
+
+        html_body = "<ul>"
+        for playlist in functions.get_user_playlists():
+            html_body += "<li>" + playlist["name"] + "</li>"
+        html_body += "</ul>"
+
+        html_file.write('<!DOCTYPE html>' + html_body + '<body></body></html>')
+        html_file.close()
+
+        return render_template("testing.html")
+
+
+@app.route('/logout')
+def logout():
+    for key in list(session.keys()):
+        session.pop(key)
+    return "Token information deleted."
+
+
+def exit_flask():
+    html_file = open("templates/testing.html", "w")
+    html_file.write('')
+    html_file.close()
+
+
+atexit.register(exit_flask)
