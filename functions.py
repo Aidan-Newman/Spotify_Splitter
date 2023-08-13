@@ -2,6 +2,7 @@ import base64
 import json
 import time
 
+from warnings import warn
 import requests
 from requests import post, get, delete
 from flask import url_for, session
@@ -23,11 +24,7 @@ def get_user_id():
     Gets the current session's authorized user's id.
     :return: user_id
     """
-    result = make_request(
-        "get",
-        "https://api.spotify.com/v1/me",
-        {},
-    )
+    result = make_request("get", "https://api.spotify.com/v1/me", {})
     return result["id"]
 
 
@@ -48,9 +45,8 @@ def create_playlist(name, description, public, collaborative):
         "public": public,
         "collaborative": collaborative
     }
-    data = json.dumps(data)
-    result = make_request("post", url, headers, data)
-    return json.loads(result)
+    result = make_request("post", url, headers, json.dumps(data))
+    return result
 
 
 def get_user_playlists():
@@ -88,15 +84,19 @@ def make_request(method=None, url=None, headers=None, data=None):
             case _:
                 raise Exception("Invalid Method")
 
-        print(result.status_code)
-        if result.status_code == BAD_TOKEN_CODE:
-            update_token()
-            attempts += 1
-        elif result.status_code not in GOOD_RESPONSE_CODES:
-            raise Exception("Request error " + str(result.status_code))
+        stat = result.status_code
+        loaded = json.loads(result.content)
+
+        print(stat)
+        if stat not in GOOD_RESPONSE_CODES:
+            if stat == BAD_TOKEN_CODE:
+                warn("Bad token.. Attempting to refresh token!")
+                update_token()
+                attempts += 1
+            else:
+                raise Exception("Spotify Returned an Error : " + str(loaded))
         else:
-            print("good code")
-            return json.loads(result.content)
+            return loaded
     raise Exception("Refresh Attempts Surpassed")
 
 
