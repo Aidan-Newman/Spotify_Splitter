@@ -67,15 +67,28 @@ def get_user_playlists():
     else:
         html_file = open("templates/testing.html", "w")
 
-        html_body = "<ul>"
+        html_body =\
+            "<form action='/data' method='post'>\
+                <label for='playlist'>Select a playlist:</label>\
+                <select id='playlist' name='playlist'>"
         for playlist in functions.get_user_playlists():
-            html_body += "<li>" + playlist["name"] + "</li>"
-        html_body += "</ul>"
+            html_body += "<option value='" + playlist["name"] + "'>" + playlist["name"] + "</option>"
+        html_body +=\
+            "\
+                </select>\
+                <input type='submit' id='submit' value='Submit!'>\
+            </form>"
 
         html_file.write('<!DOCTYPE html>' + html_body + '<body></body></html>')
         html_file.close()
 
         return render_template("testing.html")
+
+
+@app.route('/data', methods=['POST'])
+def data():
+    form_data = request.form
+    return json.dumps(form_data)
 
 
 @app.route('/logout')
