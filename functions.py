@@ -87,7 +87,6 @@ def make_request(method=None, url=None, headers=None, data=None):
         stat = result.status_code
         loaded = json.loads(result.content)
 
-        print(stat)
         if stat not in GOOD_RESPONSE_CODES:
             if stat == BAD_TOKEN_CODE:
                 warn("Bad token.. Attempting to refresh token!")

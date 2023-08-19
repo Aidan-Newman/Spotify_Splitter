@@ -59,19 +59,28 @@ def handle_authorization():
         return redirect('/get_user_playlists')
 
 
-@app.route('/get_user_playlists')
+@app.route('/get_user_playlists', methods=['POST', 'GET'])
 def get_user_playlists():
+
     # if there's no token stored redirect to authorize
     if not session.get("token_info", False):
         return redirect('/')
+
+    # if the submit button has been pressed and a post request has been sent
+    elif request.method == 'POST':
+        return request.form.get("playlist")
+
+    # prompt user for the playlist
     else:
         html_file = open("templates/testing.html", "w")
 
         html_body =\
-            "<form action='/data' method='post'>\
+            "<form method='post'>\
                 <label for='playlist'>Select a playlist:</label>\
                 <select id='playlist' name='playlist'>"
-        for playlist in functions.get_user_playlists():
+        playlists = functions.get_user_playlists()
+        print(str(playlists))
+        for playlist in playlists:
             html_body += "<option value='" + playlist["name"] + "'>" + playlist["name"] + "</option>"
         html_body +=\
             "\
@@ -85,8 +94,8 @@ def get_user_playlists():
         return render_template("testing.html")
 
 
-@app.route('/data', methods=['POST'])
-def data():
+@app.route('/handle_submit', methods=['POST'])
+def handle_submit():
     form_data = request.form
     return json.dumps(form_data)
 
