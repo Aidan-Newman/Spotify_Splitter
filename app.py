@@ -4,14 +4,12 @@ import random
 import string
 
 import atexit
-import signal
-import flask
-# import datetime
 
-from flask import Flask, request, redirect, render_template
+import os
+from dotenv import load_dotenv
+from flask import Flask, session, request, redirect, render_template, url_for
 
-import functions
-from functions import *
+from spotify_splitter import get_token, get_user_playlists
 
 
 load_dotenv()
@@ -59,8 +57,8 @@ def handle_authorization():
         return redirect('/get_user_playlists')
 
 
-@app.route('/get_user_playlists', methods=['POST', 'GET'])
-def get_user_playlists():
+@app.route('/testing', methods=['POST', 'GET'])
+def testing():
 
     # if there's no token stored redirect to authorize
     if not session.get("token_info", False):
@@ -78,8 +76,7 @@ def get_user_playlists():
             "<form method='post'>\
                 <label for='playlist'>Select a playlist:</label>\
                 <select id='playlist' name='playlist'>"
-        playlists = functions.get_user_playlists()
-        for playlist in playlists:
+        for playlist in get_user_playlists():
             html_body += "<option value='" + playlist["name"] + "'>" + playlist["name"] + "</option>"
         html_body +=\
             "\
