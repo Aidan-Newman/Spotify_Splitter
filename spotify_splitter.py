@@ -60,6 +60,28 @@ def get_user_playlists():
     return result["items"]
 
 
+def get_playlist_items(playlist_id):
+    """
+    Gets a given playlist's tracks.
+    :return: List of items.
+    """
+    url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks"
+    headers = {}
+    result = make_request("get", url, headers)
+    return result["items"]
+
+
+def get_track_audio_features(track_id):
+    """
+    Gets a given track's audio features.
+    :return: List of audio features.
+    """
+    url = f"https://api.spotify.com/v1/audio-features/{track_id}"
+    headers = {}
+    result = make_request("get", url, headers)
+    return result
+
+
 def make_request(method=None, url=None, headers=None, data=None):
     """
     Makes a request with the Python requests library. If the returned status code is the
