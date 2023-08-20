@@ -79,7 +79,6 @@ def get_user_playlists():
                 <label for='playlist'>Select a playlist:</label>\
                 <select id='playlist' name='playlist'>"
         playlists = functions.get_user_playlists()
-        print(str(playlists))
         for playlist in playlists:
             html_body += "<option value='" + playlist["name"] + "'>" + playlist["name"] + "</option>"
         html_body +=\
@@ -94,10 +93,10 @@ def get_user_playlists():
         return render_template("testing.html")
 
 
-@app.route('/handle_submit', methods=['POST'])
-def handle_submit():
-    form_data = request.form
-    return json.dumps(form_data)
+# @app.route('/handle_submit', methods=['POST'])
+# def handle_submit():
+#     form_data = request.form
+#     return json.dumps(form_data)
 
 
 @app.route('/logout')
